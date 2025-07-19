@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Satellite Link Budget Fundamentals</title>
+  <!-- Marked.js for Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-  </script>
+  <!-- MathJax for LaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,9 +20,9 @@
 <body>
 
   <h1>Satellite Link Budget Fundamentals</h1>
-  <div id="content"></div>
+  <div id="content">Loading...</div>
 
-  <script>
+<!--   <script>
     // Load external markdown file (make sure it's in the same folder or adjust path)
     fetch('satcom/link-budget-fundamentals.md')
       .then(res => res.text())
@@ -31,6 +30,16 @@
         document.getElementById('content').innerHTML = marked(md);
         MathJax.typeset(); // Render LaTeX
       });
+  </script> -->
+ <script>
+    fetch('satcom/link-budget-fundamentals.md')
+      .then(res => res.text())
+      .then(md => {
+        const html = marked.parse(md); // Use marked.parse(), not marked()
+        document.getElementById('content').innerHTML = html;
+        MathJax.typeset(); // Trigger LaTeX rendering
+      });
   </script>
+  
 </body>
 </html>
