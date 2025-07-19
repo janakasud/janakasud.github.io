@@ -1,5 +1,5 @@
 # 1. Antenna Theory
-## 1.1 An Isotropic Antenna
+## An Isotropic Antenna
 
 # 2. EIRP
 
