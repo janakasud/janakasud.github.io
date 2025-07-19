@@ -11,7 +11,7 @@ A directional antenna will radiate a power $p(\theta, \phi)$ in the direction $\
 
 The definition of the gain of an antenna is:
 
-$$g(\theta, \phi) = \frac{p(\theta, \phi)}{p_o / 4\pi}$$
+$$g(\theta, \phi) = \frac{p(\theta, \phi)}{p_o / 4\pi}  \quad (1)$$
 
 $p_o$ is also the total radiated power (in all directions) and it can therefore be expressed as:
 
@@ -24,7 +24,7 @@ $$g_{max} = \frac{p_{max}}{p_o / 4\pi} \quad (3)$$
 The maximum gain, $g_{max}$, is often called simply the "antenna gain", $g$, and is usually expressed 
 as follows in decibels, and more precisely, in decibels over the gain of an isotropic antenna (dBi):
 
-$$G = 10 \log_{10} g \quad (\text{dBi})$$
+$$G = 10 \log_{10} g \quad (\text{dBi})  \quad (4)$$
 
 
 # 2. EIRP
