@@ -33,7 +33,7 @@
       });
   </script> -->
  <script>
-    fetch('satcom/link-budget-fundamentals.md')
+    fetch('link-budget-fundamentals.md')
       .then(res => res.text())
       .then(md => {
         const html = marked.parse(md); // Use marked.parse(), not marked()
