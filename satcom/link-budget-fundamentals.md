@@ -26,6 +26,9 @@ as follows in decibels, and more precisely, in decibels over the gain of an isot
 
 $$G = 10 \log_{10} g \quad (\text{dBi})  \quad (4)$$
 
+## Antenna Effective Aperture
+
+### Derivation of $G = \frac{4\pi}{\lambda^2} A_e$
 
 # 2. EIRP
 
