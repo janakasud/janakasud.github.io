@@ -25,7 +25,7 @@
 
   <script>
     // Load external markdown file (make sure it's in the same folder or adjust path)
-    fetch('link-budget-fundamentals.md')
+    fetch('satcom/link-budget-fundamentals.md')
       .then(res => res.text())
       .then(md => {
         document.getElementById('content').innerHTML = marked(md);
