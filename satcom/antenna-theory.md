@@ -1,6 +1,12 @@
 # 1. Antenna Theory
 ## 1.1 An Isotropic Antenna
+
+Text 
+
 ## 1.2 A Directional Antenna
+
+Text
+
 # 2. EIRP
 # 3. Spreading Loss
 # 4. Free Space Loss
