@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
       contentElement.innerHTML = html;
 
       // Generate Table of Contents
-      const headings = contentElement.querySelectorAll('h1, h2');
+      // const headings = contentElement.querySelectorAll('h1, h2');
+      const headings = contentElement.querySelectorAll('h1');
       headings.forEach((heading, index) => {
         const id = `section-${index + 1}`;
         heading.id = id;
