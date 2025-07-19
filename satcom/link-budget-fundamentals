@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Satellite Link Budget Fundamentals</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2em;
+    }
+    code { background-color: #f4f4f4; padding: 2px 4px; }
+  </style>
+</head>
+<body>
+
+  <h1>Markdown + LaTeX Viewer</h1>
+  <div id="content"></div>
+
+  <script>
+    // Load external markdown file (make sure it's in the same folder or adjust path)
+    fetch('yourfile.md')
+      .then(res => res.text())
+      .then(md => {
+        document.getElementById('content').innerHTML = marked(md);
+        MathJax.typeset(); // Render LaTeX
+      });
+  </script>
+</body>
+</html>
