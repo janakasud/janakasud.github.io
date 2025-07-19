@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  fetch('/satcom/antenna-theory.md')
+  fetch('link-budget-fundamentals.md')
     .then(res => {
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       return res.text();
