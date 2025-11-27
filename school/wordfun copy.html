@@ -1,3 +1,7 @@
+<!-- 
+MIT License, Copyright (c) 2025 Janaka S.
+Free to use, modify, and distribute with no warranty. See LICENSE for details.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,18 +11,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /*
-        REMOVED: #input-container position: absolute; top: 2.5rem; left: 0; right: 0;
-        This was causing the horizontal centering issue by taking the element out of the flow.
-        */
-        
         #input-container {
-            /* Now only using transition for a visual effect */
+            position: absolute;
+            top: 2.5rem;
+            left: 0;
+            right: 0;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        /* Use opacity 1 and a non-absolute position for centering */
         #input-container:not(.hidden) {
             opacity: 1;
         }
@@ -33,7 +34,6 @@
 
         .word-btn.hidden {
             visibility: hidden;
-            /* Using visibility for the button to maintain layout space */
         }
 
         #file-upload {
@@ -43,6 +43,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
+    <!-- Fixed top header -->
     <header class="bg-white shadow-md sticky top-0 z-50 w-full">
         <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
             <h1 class="text-xl font-bold text-gray-800">Wordfun !</h1>
@@ -81,7 +82,7 @@
 
         <div class="w-full">
             <div id="feedback" class="text-center text-lg text-gray-700">
-                <div id="input-container" class="hidden flex flex-col items-center gap-4 sm:flex-row sm:gap-2 mx-auto">
+                <div id="input-container" class="hidden flex flex-col items-center gap-4 sm:flex-row sm:gap-2">
                     <input id="spelling-input" type="text" spellcheck="false"
                         class="border border-gray-300 rounded-lg text-lg text-center flex-1 focus:ring-2 focus:ring-blue-600 p-2"
                         placeholder="Spell the word">
