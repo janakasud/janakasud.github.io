@@ -5,9 +5,14 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const mdFiles = [
-    'antenna-theory.md',
-    'link-budget-fundamentals.md'
-  ].sort();
+    '1. antenna_theory.md',
+    '2. eirp.md',
+    '3. losses.md',
+    '4. link_equation.md',
+    '5. power_flux_density.md',
+    '6. carrier_to_noise_ratio.md',
+    '7. gain_over_noise_temperature.md'
+  ];
 
   const tocContainer = document.getElementById('toc-content');
   const articleContainer = document.getElementById('article-content');
@@ -67,11 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const li = document.createElement('li');
     const button = document.createElement('button');
     button.type = 'button';
-    button.textContent = file;
+    // Display name: remove "number. " prefix and ".md" extension
+    button.textContent = file.replace(/^\d+\.\s+/, '').replace(/\.md$/, '');
+    button.dataset.file = file;
     button.className = 'text-left text-blue-600 hover:underline focus:outline-none';
     button.addEventListener('click', () => {
       setActive(button);
-      loadMarkdown(file);
+      loadMarkdown(button.dataset.file);
     });
 
     li.appendChild(button);
