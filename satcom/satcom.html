@@ -11,68 +11,54 @@
     <!-- Fixed top header -->
     <header class="bg-white shadow-md sticky top-0 z-50 w-full">
         <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
-            <a href="satcom.html" class="hover:opacity-75 transition-opacity duration-200">
+            <a href="index.html" class="flex items-center space-x-2 hover:opacity-75 transition-opacity duration-200">
                 <img 
                     src="../images/logo_jj_v2_2025-11-27.png" 
                     alt="Janaka's Journal Logo (JJ)" 
-                    class="h-12 sm:h-16"
+                    class="h-10 sm:h-12"
                 />
+                <span class="text-2xl font-bold text-gray-800 tracking-wide">Janaka's Journal</span>
             </a>
-            <div class="flex-grow flex justify-center">
-                <h2 class="text-xl font-bold text-gray-800 tracking-wide">Satcom</h2>
-            </div>
             <nav class="flex items-center space-x-4">
                 <a href="../index.html" class="text-gray-600 hover:text-gray-800">Home</a>
                 <a href="satcom.html" class="text-gray-600 hover:text-gray-800">Satcom</a>
                 <a href="../linkedin/linkedin.html" class="text-gray-600 hover:text-gray-800">My LinkedIn</a>
-                <a href="../school/wordfun.html" class="text-gray-600 hover:text-gray-800">Kids Learn</a>
+                <a href="../school/school.html" class="text-gray-600 hover:text-gray-800">Kids Learn</a>
             </nav>
         </div>
     </header>
 
-<main>
-        <p>Satellite communication is a vital technology that uses orbiting satellites to relay radio signals between Earth stations. It enables global coverage for telecommunications, broadcasting, navigation, and remote sensing.</p>
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <section class="grid lg:grid-cols-4 gap-8 items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
+                <div id="toc-content" class="mb-8 p-4 bg-gray-50 rounded">
+                    <p class="text-gray-600">Loading markdown files...</p>
+                </div>
+            </div>
 
-        <h2>Key Components of a SatCom System</h2>
-        <ul>
-            <li>**The Space Segment:** The satellite itself (transponder, antenna, power source, etc.) orbiting the Earth.</li>
-            <li>**The Ground Segment (Earth Stations):** Antennas and equipment used to transmit to and receive from the satellite.</li>
-            <li>**The Control Segment:** Facilities that track and monitor the satellite's health and orbital position.</li>
-        </ul>
+            <div class="lg:col-span-3">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Content</h2>
+                <article id="article-content" class="bg-white p-6 rounded shadow-md prose max-w-none">
+                    <p class="text-gray-600">Select a file from the table of contents to load its content.</p>
+                </article>
+            </div>
+        </section>
 
-        <h2>Types of Satellite Orbits</h2>
-        <table border="1" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Abbreviation</th>
-                    <th>Orbit Name</th>
-                    <th>Approximate Altitude</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>**GEO**</td>
-                    <td>Geostationary Earth Orbit</td>
-                    <td>$35,786 \text{ km}$</td>
-                </tr>
-                <tr>
-                    <td>**MEO**</td>
-                    <td>Medium Earth Orbit</td>
-                    <td>$2,000 \text{ km} \text{ to } 35,786 \text{ km}$</td>
-                </tr>
-                <tr>
-                    <td>**LEO**</td>
-                    <td>Low Earth Orbit</td>
-                    <td>$160 \text{ km} \text{ to } 2,000 \text{ km}$</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="note">
-            **Did you know?** GEO satellites appear stationary from the ground, making them ideal for broadcasting and fixed-point communication.
-        </div>
-
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">About</h2>
+            <p class="text-gray-600 mb-4">
+                Welcome to the Satellite Communication (Satcom) section of Janaka's Journal. Here, you'll find articles and resources dedicated to the fascinating world of satellite communications, including link budget fundamentals, system design, and emerging technologies in the field.
+            </p>
+            <p class="text-gray-600">
+                Whether you're a student, professional, or enthusiast, this section aims to provide valuable insights and knowledge to help you understand and navigate the complexities of satellite communication systems.
+            </p>
+        </section>  
+        
     </main>
 
+    <script src="../js/marked.umd.js"></script>
+    <script src="../js/tex-mml-chtml.js"></script>
+    <script src="toc-generator.js"></script>
 </body>
 </html>
