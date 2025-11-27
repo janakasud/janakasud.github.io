@@ -51,9 +51,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const md = await res.text();
       const html = marked.parse(md, { mangle: false, headerIds: true });
       articleContainer.innerHTML = html;
-
-      if (window.MathJax && typeof window.MathJax.typeset === 'function') {
-        window.MathJax.typeset();
+      // Ensure MathJax processes the newly inserted content.
+      // Prefer typesetPromise() when available (MathJax v3), fall back to typeset(),
+      // or wait briefly if MathJax hasn't finished loading yet.
+      try {
+        if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+          await window.MathJax.typesetPromise();
+        } else if (window.MathJax && typeof window.MathJax.typeset === 'function') {
+          window.MathJax.typeset();
+        } else if (window.MathJax) {
+          // MathJax object exists but no typeset available yet; poll shortly.
+          const waitFor = (ms, interval = 100) => new Promise((resolve) => {
+            const start = Date.now();
+            const timer = setInterval(() => {
+              if (typeof window.MathJax.typesetPromise === 'function' || typeof window.MathJax.typeset === 'function') {
+                clearInterval(timer);
+                resolve(true);
+              } else if (Date.now() - start > ms) {
+                clearInterval(timer);
+                resolve(false);
+              }
+            }, interval);
+          });
+          const ready = await waitFor(3000);
+          if (ready) {
+            if (typeof window.MathJax.typesetPromise === 'function') await window.MathJax.typesetPromise();
+            else if (typeof window.MathJax.typeset === 'function') window.MathJax.typeset();
+          }
+        }
+      } catch (mjErr) {
+        console.warn('MathJax typeset failed', mjErr);
       }
     } catch (err) {
       const isFileProtocol = window.location.protocol === 'file:';
