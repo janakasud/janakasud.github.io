@@ -49,7 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(fileUrl);
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       const md = await res.text();
-      const html = marked.parse(md, { mangle: false, headerIds: true });
+      const html = marked.parse(md, {
+        mangle: false,
+        headerIds: true,
+        breaks: true // honor single line breaks from the markdown source
+      });
       articleContainer.innerHTML = html;
       // Ensure MathJax processes the newly inserted content.
       // Prefer typesetPromise() when available (MathJax v3), fall back to typeset(),
