@@ -14,3 +14,8 @@ p {
     font-size: 160%;
     padding: 30px;
 }
+
+/* Apply the custom font to the logo text */
+#logo-mark {
+    font-family: 'Serenade BC', cursive, sans-serif;
+}
