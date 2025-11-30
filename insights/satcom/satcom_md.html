@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Communication (SatCom)</title>
+    <link rel="icon" type="image/x-icon" href="../../images/logo_jj_v2_2025-11-27.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+</head>
+<body>
+
+    <header class="bg-white shadow-md sticky top-0 z-50 w-full">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
+            <a href="../index.html" class="flex items-center space-x-3 hover:opacity-75 transition-opacity duration-200">
+                <div class="hidden sm:block">
+                <h1 class="text-lg sm:text-xl font-bold text-gray-800 tracking-wide">Janaka's Journal</h1>
+                </div>
+            </a>
+            <nav class="hidden md:flex items-center space-x-4 text-sm font-medium">
+                <a href="../../index.html" class="text-gray-600 hover:text-gray-900">Home</a>
+                <a href="../../blog/index.html" class="text-gray-600 hover:text-gray-900">Blog</a>
+                <a href="../index.html" class="text-gray-900 border-b-2 border-indigo-500 pb-1">Insights</a>
+                <a href="../../portfolio/index.html" class="text-gray-600 hover:text-gray-900">Portfolio</a>
+                <a href="../../about.html" class="text-gray-600 hover:text-gray-900">About</a>
+            </nav>
+            <div class="flex-1 flex justify-center md:hidden">
+                <h2 class="text-base font-semibold text-gray-800">Janaka's Journal</h2>
+            </div>
+            <button 
+                id="navToggle"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            >
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+
+        <nav id="mobile-menu" class="md:hidden hidden border-t border-gray-200 bg-white">
+            <div class="px-4 py-3 space-y-1 text-sm">
+                <a href="../../index.html" class="block text-gray-600 hover:text-gray-900">Home</a>
+                <a href="../../blog/index.html" class="block text-gray-600 hover:text-gray-900">Blog</a>
+                <a href="../index.html" class="block text-gray-900 font-semibold">Insights</a>
+                <a href="../../portfolio/index.html" class="block text-gray-600 hover:text-gray-900">Portfolio</a>
+                <a href="../../about.html" class="block text-gray-600 hover:text-gray-900">About</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <section class="grid lg:grid-cols-4 gap-8 items-start">
+            <div>
+                <nav aria-label="Breadcrumb" class="text-sm text-gray-500 mb-3">
+                    <a href="../index.html" class="text-blue-600 hover:underline">Insights</a>
+                    <span class="mx-1">→</span>
+                    <span class="text-gray-700 font-semibold">Satcom</span>
+                </nav>
+            </div>
+            <div class="lg:col-span-4 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
+                <div id="toc-content" class="mb-8 p-4 bg-gray-50 rounded">
+                    <p class="text-gray-600">Loading markdown files...</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Content</h2>
+                <article id="article-content" class="markdown-body bg-white p-6 rounded shadow-md">
+                    <p class="text-gray-600">Select a file from the table of contents to load its content.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">About</h2>
+            <p class="text-gray-600 mb-4">
+                Welcome to the **Satellite Communication (Satcom)** section of Janaka's Journal. Here, you'll find articles and resources dedicated to the fascinating world of satellite communications, including link budget fundamentals, system design, and emerging technologies in the field.
+            </p>
+            <p class="text-gray-600">
+                Whether you're a student, professional, or enthusiast, this section aims to provide valuable insights and knowledge to help you understand and navigate the complexities of satellite communication systems.
+            </p>
+        </section> 
+        
+    </main>
+
+    <script src="../../js/marked.umd.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script src="toc-gen.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define the file list here (or fetch it from an external source)
+            const fileList = [
+                '2. eirp.md',
+                '3. losses.md',
+                '4. link_equation.md',
+                '5. power_flux_density.md',
+                '6. carrier_to_noise_ratio.md',
+                '7. gain_over_noise_temperature.md'
+            ];
+
+            // Call the function defined in toc-generator.js
+            if (typeof generateTocAndLoadContent === 'function') {
+                generateTocAndLoadContent(fileList);
+            } else {
+                 console.error('The function generateTocAndLoadContent was not found. Check toc-gen.js.');
+            }
+        });
+        
+        // Mobile menu toggle (kept outside the main logic for clarity)
+        const navToggle = document.getElementById('navToggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        navToggle?.addEventListener('click', () => {
+            mobileMenu?.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
