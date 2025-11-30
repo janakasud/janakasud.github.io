@@ -6,7 +6,9 @@ function generateInsightLinks() {
         console.error('Container element with ID "topics-container" not found.');
         return;
     }
-    
+
+    // 💡 Add a version string that you manually update: e.g., 'insights.json?v=2.0'
+    // every time you change the insights.json file. This helps with cache busting.
     const jsonPath = 'insights.json'; 
 
     fetch(jsonPath)
