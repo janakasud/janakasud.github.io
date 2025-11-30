@@ -133,4 +133,4 @@ function generateTocAndLoadContent(mdFiles) {
 
 //     // Call the new function with the list of files
 //     generateTocAndLoadContent(fileList);
-});
+// });
