@@ -26,8 +26,6 @@ function generateTocAndLoadContent(mdFiles) {
     }
 
     async function loadMarkdown(file) {
-        // ... (Your existing loadMarkdown function remains the same) ...
-        // ... (It's a large function, keeping it concise here) ...
 
         if (typeof marked === 'undefined') {
             articleContainer.innerHTML = '<p class="text-red-600">Markdown renderer not available.</p>';
