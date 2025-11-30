@@ -90,9 +90,9 @@ function generateTocAndLoadContent(mdFiles) {
     ul.className = 'list-disc list-inside space-y-2';
 
     mdFiles.forEach((file, index) => {
-        const li = document.createElement('li');
-        const button = document.createElement('button');
-        button.type = 'button';
+        const li = document.createElement('li'); // Create list item
+        const button = document.createElement('button'); // Create button
+        button.type = 'button'; // Set button type
         // Display name: remove "number. " prefix and ".md" extension
         button.textContent = file.replace(/^\d+\.\s+/, '').replace(/\.md$/, '');
         button.dataset.file = file;

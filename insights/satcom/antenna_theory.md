@@ -1,4 +1,4 @@
-# 1. Antenna Theory
+# Antenna Theory
 
 ## Isotropic Antenna
 
