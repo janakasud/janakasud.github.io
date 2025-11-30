@@ -118,19 +118,19 @@ function generateTocAndLoadContent(mdFiles) {
     }
 }
 
-// --- New Call Site ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Define the file list here or fetch it from another source
-    const fileList = [
-        '1. antenna_theory.md',
-        '2. eirp.md',
-        '3. losses.md',
-        '4. link_equation.md',
-        '5. power_flux_density.md',
-        '6. carrier_to_noise_ratio.md',
-        '7. gain_over_noise_temperature.md'
-    ];
+// // --- New Call Site ---
+// document.addEventListener('DOMContentLoaded', () => {
+//     // Define the file list here or fetch it from another source
+//     const fileList = [
+//         '1. antenna_theory.md',
+//         '2. eirp.md',
+//         '3. losses.md',
+//         '4. link_equation.md',
+//         '5. power_flux_density.md',
+//         '6. carrier_to_noise_ratio.md',
+//         '7. gain_over_noise_temperature.md'
+//     ];
 
-    // Call the new function with the list of files
-    generateTocAndLoadContent(fileList);
+//     // Call the new function with the list of files
+//     generateTocAndLoadContent(fileList);
 });
