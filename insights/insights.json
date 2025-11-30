@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Antenna Theory",
+    "description": "Notes, concepts, and calculations related to antenna theory for satellite communication.",
+    "url": "./satcom/antenna/antenna.html" 
+  },
+  {
+    "title": "Satcom Link Budgets",
+    "description": "A detailed breakdown of the satellite communication link equation and budget calculations.",
+    "url": "./satcom/linkbudget/linkbudget.html" 
+  }
+]
