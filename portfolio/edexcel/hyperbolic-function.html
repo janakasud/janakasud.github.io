@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hyperbolic Functions</title>
+  <link rel="icon" type="image/x-icon" href="../../images/logo_jj_v2_2025-11-27.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../../js/header.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+  <div id="header-placeholder"></div>
+
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <section class="grid lg:grid-cols-4 gap-8 items-start">
+      <div class="lg:col-span-3">
+        <article id="article-content" class="markdown-body bg-white p-6 rounded shadow-md">
+          <p class="text-gray-600">Select a file from the table of contents to load its content.</p>
+        </article>
+      </div>
+
+      <aside>
+        <nav aria-label="Breadcrumb" class="text-sm text-gray-500 mb-3">
+          <a href="../index.html" class="text-blue-600 hover:underline">Articles</a>
+          <span class="mx-1">→</span>
+          <span class="text-gray-700 font-semibold">Hyperbolic Functions</span>
+        </nav>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
+        <div id="toc-content" class="p-4 bg-gray-50 border border-gray-100 rounded">
+          <p class="text-gray-600">Loading markdown files...</p>
+        </div>
+      </aside>
+    </section>
+
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 mt-8">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6 text-sm text-gray-500">
+      © <span id="year"></span> Janaka's Journal
+    </div>
+  </footer>
+
+  <script src="../../js/marked.umd.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const fileList = ['hyperbolic-function.md'];
+      const tocContainer = document.getElementById('toc-content');
+      const articleContainer = document.getElementById('article-content');
+      const baseUrl = new URL('.', window.location.href);
+      let activeButton = null;
+
+      if (!tocContainer || !articleContainer) return;
+
+      function setActive(button) {
+        if (activeButton) activeButton.classList.remove('font-semibold', 'text-blue-800');
+        button.classList.add('font-semibold', 'text-blue-800');
+        activeButton = button;
+      }
+
+      async function loadMarkdown(file) {
+        if (typeof marked === 'undefined') {
+          articleContainer.innerHTML = '<p class="text-red-600">Markdown renderer not available.</p>';
+          return;
+        }
+        const fileUrl = new URL(file, baseUrl);
+        articleContainer.innerHTML = `<p class="text-gray-600">Loading ${fileUrl.pathname}...</p>`;
+        try {
+          const res = await fetch(fileUrl);
+          if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+          const md = await res.text();
+          const html = marked.parse(md, { mangle: false, headerIds: true, breaks: true });
+          articleContainer.innerHTML = html;
+          if (window.MathJax?.typesetPromise) await window.MathJax.typesetPromise();
+          else if (window.MathJax?.typeset) window.MathJax.typeset();
+        } catch (err) {
+          const hint = window.location.protocol === 'file:' 
+            ? 'Run a local server (e.g., python -m http.server) to load local files.' 
+            : 'Please try again later.';
+          articleContainer.innerHTML = `<p class="text-red-600">Unable to load ${fileUrl.pathname}. ${hint}</p>`;
+          console.error(err);
+        }
+      }
+
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc list-inside space-y-2';
+      fileList.forEach((file, index) => {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = file.replace(/\\.md$/, '');
+        button.dataset.file = file;
+        button.className = 'text-left text-blue-600 hover:underline focus:outline-none';
+        button.addEventListener('click', () => {
+          setActive(button);
+          loadMarkdown(file);
+        });
+        li.appendChild(button);
+        ul.appendChild(li);
+        if (index === 0) setActive(button);
+      });
+      tocContainer.innerHTML = '';
+      tocContainer.appendChild(ul);
+      if (fileList.length) loadMarkdown(fileList[0]);
+    });
+  </script>
+</body>
+</html>
