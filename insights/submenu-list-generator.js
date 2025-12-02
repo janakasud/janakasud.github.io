@@ -9,7 +9,7 @@ function generateInsightLinks() {
 
     // 💡 Add a version string that you manually update: e.g., 'insights.json?v=2.0'
     // every time you change the insights.json file. This helps with cache busting.
-    const jsonPath = 'insights.json'; 
+    const jsonPath = 'submenu-list.json'; 
 
     fetch(jsonPath)
         .then(response => {
