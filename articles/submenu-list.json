@@ -8,5 +8,11 @@
     "title": "Satellite Link Budgets",
     "description": "A detailed breakdown of the satellite communication link equation and budget calculations.",
     "url": "./linkbudget/linkbudget.html" 
+  },
+  {
+    "title": "Web Development",
+    "description": "A collection of web development related articles.",
+    "url": "./webdev/webdev.html" 
   }
+
 ]
