@@ -1,0 +1,87 @@
+
+---
+// src/components/Header.astro
+---
+
+<header class="site-header">
+  <div class="container container-home header-inner">
+    <nav aria-label="Main navigation">
+      <a href="/" class="home-link">Home</a>
+    </nav>
+
+    <a href="/" class="site-name" aria-label="Janaka Sudasingha — Home">
+      Janaka Sudasingha
+    </a>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    padding-top: 20px;
+    padding-bottom: 16px;
+  }
+
+  /* Left navigation */
+  .home-link {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .home-link:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Right site identity */
+  .site-name {
+    color: var(--text);
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    text-align: right;
+    text-decoration: none;
+  }
+
+  .site-name:hover {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  /* Keyboard accessibility */
+  .home-link:focus-visible,
+  .site-name:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .header-inner {
+      gap: 12px;
+      padding-top: 16px;
+      padding-bottom: 14px;
+    }
+
+    .site-name {
+      font-size: 1rem;
+    }
+
+    .home-link {
+      font-size: 0.875rem;
+    }
+  }
+</style>

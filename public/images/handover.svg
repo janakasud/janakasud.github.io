@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+<rect width="640" height="400" fill="#f0ede7"/>
+<path d="M0 335Q320 250 640 335V400H0Z" fill="#e8e4dc"/>
+<path d="M0 335Q320 250 640 335" stroke="#c4bcb0" stroke-width="2" fill="none"/>
+<path d="M60 135Q320 5 590 130" fill="none" stroke="#c4bcb0" stroke-dasharray="5 6"/>
+<g font-family="monospace" font-size="16" fill="#3a4a5a"><text x="40" y="36">ONE TERMINAL · TWO PASSING SATELLITES</text><text x="110" y="155">SATELLITE A</text><text x="408" y="143">SATELLITE B</text><text x="222" y="360">GROUND TERMINAL</text></g>
+<circle cx="180" cy="95" r="10" fill="#b6461c"/><circle cx="460" cy="85" r="10" fill="#1c2a38"/>
+<path d="M180 95L320 292" stroke="#b6461c" stroke-width="3"/><path d="M460 85L320 292" stroke="#1c2a38" stroke-width="2" stroke-dasharray="8 6"/>
+<path d="M200 66h65l-10-7m10 7-10 7M480 56h65l-10-7m10 7-10 7" fill="none" stroke="#3a4a5a" stroke-width="2"/>
+<rect x="314" y="292" width="12" height="28" fill="#1c2a38"/>
+<g font-family="monospace" font-size="14"><text x="116" y="225" fill="#b6461c">Serving link</text><text x="405" y="225" fill="#1c2a38">Candidate link</text><text x="40" y="388" fill="#3a4a5a">CONCEPTUAL GEOMETRY · NOT TO SCALE</text></g>
+</svg>

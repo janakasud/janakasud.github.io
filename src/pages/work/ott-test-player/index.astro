@@ -1,0 +1,610 @@
+---
+// src/pages/work/ott-test-player/index.astro
+// Standalone page: it deliberately does not use BaseLayout, so none of the site CSS reaches the player.
+// is:global keeps the CSS unscoped (JS adds elements later); is:inline keeps the script as plain JS.
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OTT HLS Test Player</title>
+  <meta name="description" content="Browser-based HLS test and debug player: ABR switching, segment timing, buffer and live-edge metrics." />
+
+  <script is:inline src="/work/ott-test-player/js/hls.min.js"></script>
+
+  <style is:global>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, sans-serif;
+      --bg: #101217; --panel: #161a21; --line: #292d35; --text: #f1f3f5; --dim: #8b93a1;
+      --ok: #7dd3a4; --warn: #f2c94c; --bad: #f87171; --accent: #5eb1ff;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding: 20px; }
+    main { max-width: 1400px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+    h1 { font-size: 1.25rem; font-weight: 600; margin: 0; }
+    h2 { font-size: 0.8rem; font-weight: 600; color: var(--dim); margin: 0 0 10px; }
+
+    .src { display: flex; gap: 8px; flex: 1; max-width: 640px; }
+    input, select, button { font: inherit; font-size: 0.8rem; color: var(--text); background: #1d222b; border: 1px solid #363b45; border-radius: 5px; padding: 6px 10px; }
+    input { flex: 1; min-width: 0; font-family: var(--mono); }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--dim); margin-bottom: 14px; }
+    .status { color: var(--ok); }
+    .status.error { color: var(--bad); }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+    .col { display: grid; gap: 16px; }
+    .tables { display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; margin: 16px 0; }
+
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+    .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .bar h2 { margin: 0; }
+    .bar > div { display: flex; gap: 6px; }
+    .bar input { flex: 0 1 180px; }
+
+    canvas { display: block; width: 100%; }
+    #tl { height: 44px; }
+    #chart { height: 170px; }
+    .legend { display: flex; gap: 14px; font-size: 0.72rem; color: var(--dim); margin-bottom: 8px; flex-wrap: wrap; }
+    .legend i { display: inline-block; width: 10px; height: 3px; margin-right: 5px; vertical-align: middle; }
+
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 5px 16px; margin: 0; font-size: 0.8rem; }
+    dt { color: var(--dim); }
+    dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+    .scroll { overflow-x: auto; max-height: 300px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.74rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    th { text-align: left; color: var(--dim); font-weight: 500; padding: 4px 10px 6px 0; position: sticky; top: 0; background: var(--panel); }
+    td { padding: 3px 10px 3px 0; border-top: 1px solid var(--line); }
+    #levels tr[data-i] { cursor: pointer; }
+    #levels tr[data-i]:hover td { background: #1d222b; }
+    tr.cur td { color: var(--ok); }
+    tr.slow td { color: var(--warn); }
+
+    #log { height: 260px; overflow: auto; font-family: var(--mono); font-size: 0.74rem; line-height: 1.55; background: #0c0e12; border-radius: 5px; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .l.abr { color: var(--accent); }
+    .l.media { color: var(--dim); }
+    .l.warn { color: var(--warn); }
+    .l.err { color: var(--bad); }
+    .l.hide { display: none; }
+
+    footer { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 14px; font-size: 0.75rem; color: #747b88; }
+
+    @media (max-width: 900px) { .layout, .tables { grid-template-columns: 1fr; } }
+    .back { display: inline-block; margin-bottom: 6px; font-size: 0.78rem; color: var(--dim); text-decoration: none; }
+    .back:hover { color: var(--accent); }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div><a class="back" href="/work">&larr; Work</a><h1>OTT Test Player</h1></div>
+      <form id="form" class="src">
+        <select id="fileSelect" aria-label="Select HLS video">
+          <option value="/work/ott-test-player/samples/test-pattern/master.m3u8">Test pattern (240p / 360p / 480p)</option>
+          <option value="custom">Custom URL</option>
+        </select>
+        <input id="src" spellcheck="false" aria-label="Manifest URL" />
+
+        <select id="buf" aria-label="Buffer target">
+          <option value="0">Buffer: hls.js default</option>
+          <option value="30">Buffer: 30 s</option>
+          <option value="10">Buffer: 10 s</option>
+          <option value="6">Buffer: 6 s</option>
+        </select>
+
+        <select id="engine" aria-label="Playback engine">
+          <option value="auto">Auto</option>
+          <option value="hlsjs">hls.js</option>
+          <option value="native">Native</option>
+        </select>
+
+        <button>Load</button>
+      </form>
+    </header>
+
+    <div class="info">
+      <span>Wooli Breakwater · H.264 / AAC · 640×360</span>
+      <span id="status" class="status">Initialising...</span>
+    </div>
+
+    <div class="layout">
+      <div class="col">
+        <video id="video" controls playsinline preload="metadata"></video>
+        <section class="card">
+          <h2>Buffer and playhead</h2>
+          <canvas id="tl"></canvas>
+        </section>
+        <section class="card">
+          <h2>Bandwidth and selected bitrate per main segment</h2>
+          <div class="legend">
+            <span><i style="background:var(--accent)"></i>Segment throughput (clipped at 1.5x top rung)</span>
+            <span><i style="background:var(--warn)"></i>Bandwidth estimate (clipped)</span>
+            <span><i style="background:var(--ok)"></i>Level bitrate</span>
+          </div>
+          <canvas id="chart"></canvas>
+        </section>
+      </div>
+      <div class="col" id="stats"></div>
+    </div>
+
+    <div class="tables">
+      <section class="card">
+        <div class="bar">
+          <h2>Variants (click a row to lock a level)</h2>
+          <button id="auto" type="button">Auto</button>
+        </div>
+        <div class="scroll"><table id="levels"></table></div>
+      </section>
+      <section class="card">
+        <h2>Recent segments (amber = loaded slower than real time)</h2>
+        <div class="scroll"><table id="frags"></table></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="bar">
+        <h2>Event log</h2>
+        <div>
+          <input id="filter" placeholder="Filter (abr, net, sn 12...)" aria-label="Filter log" />
+          <button id="copyLog" type="button">Copy log</button>
+          <button id="copySnap" type="button">Copy snapshot</button>
+          <button id="clearLog" type="button">Clear</button>
+        </div>
+      </div>
+      <div id="log" role="log"></div>
+    </section>
+
+    <footer>
+      FFmpeg Transcoding Test · HLS.js Player · URL params: ?src=&lt;manifest&gt;&amp;engine=auto|hlsjs|native
+    </footer>
+  </main>
+
+  <script is:inline>
+    const $ = id => document.getElementById(id);
+    const video = $("video"), statusEl = $("status"), logEl = $("log");
+    const DEFAULT_SRC = "/work/ott-test-player/samples/test-pattern/master.m3u8";
+    const qs = new URLSearchParams(location.search);
+    $("src").value = qs.get("src") || DEFAULT_SRC;
+
+    if (qs.get("engine")) $("engine").value = qs.get("engine");
+    if (qs.get("buffer")) $("buf").value = qs.get("buffer");
+
+    function syncFileSelect() {
+      const selected = [...$("fileSelect").options].find(
+        option => option.value === $("src").value.trim()
+      );
+      $("fileSelect").value = selected ? selected.value : "custom";
+    }
+    syncFileSelect();
+
+    const C = { track: "#232831", accent: "#5eb1ff", text: "#f1f3f5", dim: "#8b93a1", grid: "#262b34", warn: "#f2c94c", ok: "#7dd3a4" };
+    const RS = ["HAVE_NOTHING", "HAVE_METADATA", "HAVE_CURRENT_DATA", "HAVE_FUTURE_DATA", "HAVE_ENOUGH_DATA"];
+
+    const f2 = n => Number.isFinite(n) ? n.toFixed(2) : "–";
+    const sec = n => Number.isFinite(n) ? n.toFixed(2) + " s" : "–";
+    const ms = n => Number.isFinite(n) ? Math.round(n) + " ms" : "–";
+    const bps = n => !n ? "–" : n >= 1e6 ? (n / 1e6).toFixed(2) + " Mbps" : Math.round(n / 1e3) + " kbps";
+    const kb = n => n == null ? "–" : (n / 1024).toFixed(0) + " KB";
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const codecsOf = l => (l.attrs && l.attrs.CODECS) || [l.videoCodec, l.audioCodec].filter(Boolean).join(",") || "–";
+    const fpsOf = l => l.frameRate || (l.attrs && l.attrs["FRAME-RATE"]) || "–";
+
+    let hls = null, S;
+    function resetState() {
+      S = { t0: performance.now(), native: false, manifest: null, firstSeg: null, firstFrame: null, started: false,
+            stallStart: null, stalls: 0, stallMs: 0, switches: 0, errors: 0, warnings: 0, pl: [], lastPl: null, frags: [], bw: [], details: null,
+            lastTotal: 0, lastT: performance.now(), fps: null };
+    }
+    resetState();
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    /* ---------- Event log ---------- */
+    function log(cat, msg) {
+      const stick = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 24;
+      const row = document.createElement("div");
+      row.className = "l " + cat;
+      row.textContent = `${((performance.now() - S.t0) / 1000).toFixed(3).padStart(8)}s ${cat.padEnd(5)} ${msg}`;
+      logEl.appendChild(row);
+      while (logEl.childElementCount > 500) logEl.firstChild.remove();
+      applyFilter(row);
+      if (stick) logEl.scrollTop = logEl.scrollHeight;
+    }
+    function applyFilter(row) {
+      const q = $("filter").value.toLowerCase();
+      row.classList.toggle("hide", !!q && !row.textContent.toLowerCase().includes(q));
+    }
+    $("filter").addEventListener("input", () => [...logEl.children].forEach(applyFilter));
+    $("clearLog").onclick = () => (logEl.textContent = "");
+
+    function copy(text, btn) {
+      const label = btn.textContent;
+      navigator.clipboard.writeText(text).then(() => (btn.textContent = "Copied"), () => (btn.textContent = "Copy failed"));
+      setTimeout(() => (btn.textContent = label), 1200);
+    }
+    $("copyLog").onclick = e => copy([...logEl.children].map(r => r.textContent).join("\n"), e.target);
+    $("copySnap").onclick = e => copy(snapshot(), e.target);
+
+    /* ---------- Stat helpers ---------- */
+    const quality = () => (video.getVideoPlaybackQuality ? video.getVideoPlaybackQuality() : null);
+    const lvl = () => (hls && hls.levels ? hls.levels[hls.currentLevel] : null);
+    function bufAhead() {
+      const b = video.buffered, t = video.currentTime;
+      for (let i = 0; i < b.length; i++) if (t >= b.start(i) - 0.1 && t <= b.end(i)) return b.end(i) - t;
+      return 0;
+    }
+    function ranges() {
+      const b = video.buffered;
+      if (!b.length) return "none";
+      return [...Array(b.length)].map((_, i) => `${b.start(i).toFixed(1)}–${b.end(i).toFixed(1)}`).join(", ");
+    }
+    const na = v => (hls ? v() : S.native ? "n/a (native)" : "–");
+
+    const avg = a => (a.length ? a.reduce((m, n) => m + n, 0) / a.length : NaN);
+    const mx = a => (a.length ? Math.max(...a) : NaN);
+
+    const GROUPS = [
+      ["Playback", [
+        ["State", () => `${video.ended ? "ended" : video.paused ? "paused" : S.stallStart != null ? "buffering" : "playing"} (${RS[video.readyState]})`],
+        ["Position", () => sec(video.currentTime)],
+        ["Duration", () => (Number.isFinite(video.duration) ? sec(video.duration) : "live / unknown")],
+        ["Buffer ahead", () => sec(bufAhead())],
+        ["Buffered ranges", ranges],
+        ["Playback rate", () => video.playbackRate + "×"],
+        ["Decoded size", () => (video.videoWidth ? `${video.videoWidth}×${video.videoHeight}` : "–")],
+        ["Display size", () => `${video.clientWidth}×${video.clientHeight} @${window.devicePixelRatio}x`],
+        ["Dropped / total frames", () => { const q = quality(); return q ? `${q.droppedVideoFrames} / ${q.totalVideoFrames}` : "–"; }],
+        ["Render fps", () => (S.fps == null ? "–" : S.fps.toFixed(1))],
+      ]],
+      ["Adaptive bitrate", [
+        ["Engine", () => (hls ? "hls.js " + Hls.version : S.native ? "native" : "–")],
+        ["Current level", () => na(() => { const l = lvl(); return l ? `L${hls.currentLevel} ${l.width}×${l.height} @ ${bps(l.bitrate)}` : "–"; })],
+        ["Codecs", () => na(() => { const l = lvl(); return l ? codecsOf(l) : "–"; })],
+        ["Frame rate", () => na(() => { const l = lvl(); return l ? fpsOf(l) : "–"; })],
+        ["Next level", () => na(() => "L" + hls.nextLoadLevel)],
+        ["Selection", () => na(() => (hls.autoLevelEnabled ? "auto" : "locked"))],
+        ["Bandwidth estimate", () => na(() => bps(hls.bandwidthEstimate))],
+        ["Level switches", () => na(() => S.switches)],
+        ["Audio track", () => na(() => { const t = hls.audioTracks[hls.audioTrack]; return t ? `${t.name} ${t.lang || ""}` : "muxed / none"; })],
+      ]],
+      ["Startup and health", [
+        ["Manifest loaded", () => (S.manifest == null ? "–" : ms(S.manifest))],
+        ["First segment", () => (S.firstSeg == null ? "–" : ms(S.firstSeg))],
+        ["First frame ready", () => (S.firstFrame == null ? "–" : ms(S.firstFrame))],
+        ["Stalls", () => `${S.stalls} (${ms(S.stallMs + (S.stallStart != null ? performance.now() - S.stallStart : 0))})`],
+        ["Errors / warnings", () => `${S.errors} / ${S.warnings}`],
+        ["Target duration", () => (S.details ? S.details.targetduration + " s" : "–")],
+        ["Live latency", () => (hls && S.details && S.details.live ? `${sec(hls.latency)} (target ${f2(hls.targetLatency)})` : S.details ? "VOD" : "–")],
+        ["Live edge gap", () => (hls && S.details && S.details.live && hls.liveSyncPosition != null ? sec(hls.liveSyncPosition - video.currentTime) : S.details ? "n/a (VOD)" : "–")],
+        ["Playlist load", () => (S.pl.length ? `last ${ms(S.pl[S.pl.length - 1].load)}, avg ${ms(avg(S.pl.map(p => p.load)))}, max ${ms(mx(S.pl.map(p => p.load)))}` : "–")],
+        ["Playlist TTFB", () => (S.pl.length ? `avg ${ms(avg(S.pl.map(p => p.ttfb)))}, max ${ms(mx(S.pl.map(p => p.ttfb)))}` : "–")],
+        ["Playlist refresh", () => { const g = S.pl.map(p => p.gap).filter(Number.isFinite); return g.length ? `avg ${ms(avg(g))}, max ${ms(mx(g))}` : "–"; }],
+        ["Segment TTFB", () => (S.frags.length ? `avg ${ms(avg(S.frags.map(f => f.ttfb)))}, max ${ms(mx(S.frags.map(f => f.ttfb)))}` : "–")],
+        ["Load / duration", () => { const r = S.frags.map(f => f.load / (f.dur * 1000)); return r.length ? `avg ${f2(avg(r))}, max ${f2(mx(r))} (above 1 = slower than real time)` : "–"; }],
+      ]],
+    ];
+
+    const cells = [];
+    GROUPS.forEach(([title, rows]) => {
+      const sec_ = document.createElement("section");
+      sec_.className = "card";
+      sec_.innerHTML = `<h2>${title}</h2><dl></dl>`;
+      rows.forEach(([k, fn]) => {
+        const dt = document.createElement("dt"), dd = document.createElement("dd");
+        dt.textContent = k;
+        sec_.querySelector("dl").append(dt, dd);
+        cells.push([dd, fn]);
+      });
+      $("stats").appendChild(sec_);
+    });
+
+    function snapshot() {
+      const o = { time: new Date().toISOString(), source: $("src").value, userAgent: navigator.userAgent };
+      GROUPS.forEach(([g, rows]) => {
+        o[g] = {};
+        rows.forEach(([k, fn]) => { try { o[g][k] = String(fn()); } catch (e) {} });
+      });
+      o.variants = hls ? hls.levels.map(l => ({ bitrate: l.bitrate, avg: l.averageBitrate, width: l.width, height: l.height, codecs: codecsOf(l) })) : [];
+      o.recentSegments = S.frags.slice(-20);
+      return JSON.stringify(o, null, 2);
+    }
+
+    /* ---------- Tables ---------- */
+    function renderLevels() {
+      const t = $("levels");
+      if (!hls || !hls.levels.length) {
+        t.innerHTML = "<tr><td>No variant data (native playback or no manifest yet)</td></tr>";
+        return;
+      }
+      t.innerHTML = "<thead><tr><th>Level<th>Resolution<th>Bandwidth<th>Average<th>fps<th>Codecs</thead><tbody>" +
+        hls.levels.map((l, i) => `<tr data-i="${i}"><td>L${i}</td><td>${l.width}×${l.height}</td><td>${bps(l.bitrate)}</td><td>${bps(l.averageBitrate)}</td><td>${esc(fpsOf(l))}</td><td>${esc(codecsOf(l))}</td></tr>`).join("") + "</tbody>";
+    }
+    $("levels").addEventListener("click", e => {
+      const r = e.target.closest("tr[data-i]");
+      if (r && hls) { hls.currentLevel = +r.dataset.i; log("abr", "Manual lock to L" + r.dataset.i); }
+    });
+    $("auto").onclick = () => { if (hls && !hls.autoLevelEnabled) { hls.currentLevel = -1; log("abr", "Automatic level selection"); } };
+
+    function renderFrags() {
+      $("frags").innerHTML = "<thead><tr><th>sn<th>Type<th>Level<th>Dur<th>Size<th>Load<th>TTFB<th>Transfer<th>Throughput<th>Load/dur</thead><tbody>" +
+        S.frags.slice(-12).reverse().map(f => `<tr class="${f.load > f.dur * 1000 ? "slow" : ""}"><td>${f.sn}</td><td>${f.type}</td><td>L${f.lvl}</td><td>${f2(f.dur)} s</td><td>${kb(f.bytes)}</td><td>${ms(f.load)}</td><td>${ms(f.ttfb)}</td><td>${ms(f.xfer)}</td><td>${bps(f.tp)}</td><td>${f2(f.load / (f.dur * 1000))}</td></tr>`).join("") + "</tbody>";
+    }
+
+    /* ---------- Canvases ---------- */
+    function cv(id) {
+      const c = $(id), r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+      if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
+      const x = c.getContext("2d");
+      x.setTransform(d, 0, 0, d, 0, 0);
+      x.clearRect(0, 0, r.width, r.height);
+      return [x, r.width, r.height];
+    }
+
+    function drawTimeline() {
+      const [x, w, h] = cv("tl");
+      let a = 0, b = video.duration;
+      if (!Number.isFinite(b) || (S.details && S.details.live)) {
+        const s = video.seekable;
+        if (s.length) { a = s.start(0); b = s.end(s.length - 1); } else if (!Number.isFinite(b)) b = 0;
+      }
+      x.fillStyle = C.track; x.fillRect(0, 14, w, 12);
+      x.font = "10px " + getComputedStyle(document.documentElement).getPropertyValue("--mono");
+      x.fillStyle = C.dim; x.textAlign = "left"; x.fillText(a.toFixed(1) + " s", 0, h - 2);
+      x.textAlign = "right"; x.fillText(b.toFixed(1) + " s", w, h - 2);
+      if (b <= a) return;
+      const px = t => ((t - a) / (b - a)) * w, buf = video.buffered;
+      x.fillStyle = C.accent;
+      for (let i = 0; i < buf.length; i++) x.fillRect(px(buf.start(i)), 14, Math.max(1, px(buf.end(i)) - px(buf.start(i))), 12);
+      x.fillStyle = C.text; x.fillRect(px(video.currentTime) - 1, 8, 2, 24);
+    }
+
+    function drawChart() {
+      const [x, w, h] = cv("chart"), d = S.bw, L = 46, R = 6, T = 6, B = 18;
+      const top = hls && hls.levels && hls.levels.length ? Math.max(...hls.levels.map(l => l.bitrate || 0)) : 0;
+      const max = Math.max(1e6, top, ...d.map(p => p.br)) * 1.5;
+      const last = d[d.length - 1];
+      const live = !!(S.details && S.details.live) || !Number.isFinite(video.duration);
+      const t1 = live ? (last ? last.t + last.dur : 1) : video.duration;
+      const t0 = !d.length ? 0 : live ? Math.max(d[0].t, t1 - 120) : 0;
+      const dv = d.filter(p => p.t + p.dur >= t0);
+      const X = t => L + (Math.max(0, t - t0) / Math.max(0.001, t1 - t0)) * (w - L - R);
+      const Y = v => h - B - (Math.min(v, max) / max) * (h - T - B);
+      x.font = "10px monospace"; x.textAlign = "right"; x.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const v = (max * i) / 4, y = Y(v);
+        x.strokeStyle = C.grid; x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke();
+        x.fillStyle = C.dim; x.fillText((v / 1e6).toFixed(1) + "M", L - 6, y + 3);
+      }
+      x.fillStyle = C.dim; x.textAlign = "left"; x.fillText(t0.toFixed(0) + " s", L, h - 4);
+      x.textAlign = "right"; x.fillText(t1.toFixed(1) + " s", w - R, h - 4);
+      if (!d.length) { x.textAlign = "center"; x.fillText("Waiting for segments", w / 2, h / 2); return; }
+      const line = (k, col, step) => {
+        x.strokeStyle = col; x.lineWidth = 2; x.beginPath();
+        dv.forEach((p, i) => {
+          const px = X(p.t + p.dur / 2), py = Y(p[k]);
+          if (i === 0) x.moveTo(px, py);
+          else { if (step) x.lineTo(px, Y(dv[i - 1][k])); x.lineTo(px, py); }
+        });
+        x.stroke();
+      };
+      line("br", C.ok, true); line("est", C.warn); line("tp", C.accent);
+      const ph = X(video.currentTime);
+      x.strokeStyle = C.text; x.lineWidth = 1; x.beginPath(); x.moveTo(ph, T); x.lineTo(ph, h - B); x.stroke();
+      x.textAlign = "right";
+      let ty = T + 12;
+      if (last.est > max) { x.fillStyle = C.warn; x.fillText("estimate " + bps(last.est) + " (off scale)", w - R, ty); ty += 13; }
+      if (last.tp > max) { x.fillStyle = C.accent; x.fillText("throughput " + bps(last.tp) + " (off scale)", w - R, ty); }
+    }
+
+    /* ---------- Refresh loop ---------- */
+    function update() {
+      const q = quality(), now = performance.now();
+      if (q && now - S.lastT >= 1000) {
+        S.fps = ((q.totalVideoFrames - S.lastTotal) * 1000) / (now - S.lastT);
+        S.lastTotal = q.totalVideoFrames; S.lastT = now;
+      }
+      cells.forEach(([dd, fn]) => { try { dd.textContent = fn(); } catch (e) { dd.textContent = "–"; } });
+      if (hls) [...$("levels").rows].forEach(r => r.classList.toggle("cur", +r.dataset.i === hls.currentLevel));
+      drawTimeline(); drawChart();
+    }
+    setInterval(update, 250);
+
+    /* ---------- Video element events ---------- */
+    ["loadedmetadata", "loadeddata", "play", "pause", "seeking", "seeked", "ended", "ratechange", "stalled"].forEach(n =>
+      video.addEventListener(n, () => {
+        if (n === "loadeddata" && S.firstFrame == null) S.firstFrame = performance.now() - S.t0;
+        log("media", `${n} @ ${sec(video.currentTime)}`);
+      }));
+    video.addEventListener("waiting", () => {
+      if (S.started && S.stallStart == null && !video.seeking) {
+        S.stallStart = performance.now(); S.stalls++;
+        log("warn", "Stall started, buffer " + sec(bufAhead()));
+      }
+    });
+    video.addEventListener("playing", () => {
+      S.started = true;
+      if (S.stallStart != null) {
+        const d = performance.now() - S.stallStart;
+        S.stallMs += d; S.stallStart = null;
+        log("warn", "Stall ended after " + ms(d));
+      } else log("media", "playing");
+    });
+    video.addEventListener("resize", () => log("media", `Decoded resolution ${video.videoWidth}×${video.videoHeight}`));
+    video.addEventListener("error", () => {
+      const e = video.error; S.errors++;
+      log("err", `MediaError code ${e && e.code} ${(e && e.message) || ""}`);
+      setStatus("Media error", true);
+    });
+
+    /* ---------- Native HLS Fallback ---------- */
+    function startNative(src) {
+      renderLevels();
+      S.native = true;
+      video.src = src;
+      setStatus("Ready · Native HLS (limited stats)");
+      log("media", "Native HLS fallback: " + src);
+    }
+
+    /* ---------- Playback ---------- */
+    function startHls(src) {
+      const bt = +$("buf").value;
+      hls = new Hls(bt ? { maxBufferLength: bt, maxMaxBufferLength: bt, maxBufferSize: 0 } : {});
+      log("media", bt ? `Buffer target ${bt} s` : "Buffer target: hls.js default (about 8 x 60 MB / top bitrate)");
+
+      const E = Hls.Events;
+
+      hls.on(E.MANIFEST_LOADING, (_, d) => log("net", "GET " + d.url));
+      hls.on(E.MANIFEST_LOADED, (_, d) => {
+        S.manifest = performance.now() - S.t0;
+        log("net", `Master playlist: ${d.levels.length} variant(s), ${d.audioTracks.length} audio track(s), load ${ms(d.stats.loading.end - d.stats.loading.start)} (TTFB ${ms(d.stats.loading.first - d.stats.loading.start)})`);
+      });
+      hls.on(E.MANIFEST_PARSED, (_, d) => {
+        renderLevels();
+        setStatus("Ready · HLS.js " + Hls.version);
+        log("media", "Manifest parsed, start level L" + d.firstLevel);
+      });
+      hls.on(E.LEVEL_LOADED, (_, d) => {
+        const x = d.details; S.details = x;
+        const st = d.stats, now = performance.now();
+        let extra = "";
+        if (st && st.loading) {
+          const pr = { load: st.loading.end - st.loading.start, ttfb: st.loading.first - st.loading.start, gap: S.lastPl != null ? now - S.lastPl : NaN };
+          S.pl.push(pr); if (S.pl.length > 200) S.pl.shift(); S.lastPl = now;
+          extra = `, load ${ms(pr.load)} (TTFB ${ms(pr.ttfb)})` + (Number.isFinite(pr.gap) ? `, +${ms(pr.gap)} since last` : "");
+        }
+        log("net", `Media playlist L${d.level}: ${x.fragments.length} segments (sn ${x.startSN}-${x.endSN}), target ${x.targetduration}s, ${x.live ? "live" : "VOD"}, total ${f2(x.totalduration)}s${extra}`);
+      });
+      hls.on(E.LEVEL_SWITCHING, (_, d) => {
+        S.switches++;
+        const l = hls.levels[d.level];
+        log("abr", `Switching to L${d.level} ${l.width}×${l.height} ${bps(l.bitrate)} (estimate ${bps(hls.bandwidthEstimate)})`);
+      });
+      hls.on(E.LEVEL_SWITCHED, (_, d) => log("abr", "Switched to L" + d.level));
+      hls.on(E.FRAG_LOADING, (_, d) => log("net", `Request ${d.frag.type} sn ${d.frag.sn} L${d.frag.level}`));
+      hls.on(E.FRAG_LOADED, (_, d) => {
+        const f = d.frag, s = (d.frag && d.frag.stats) || d.stats, load = s.loading.end - s.loading.start, bytes = s.total || s.loaded;
+        const rec = { sn: f.sn, type: f.type, lvl: f.level, dur: f.duration, bytes, load,
+                      ttfb: s.loading.first - s.loading.start, xfer: s.loading.end - s.loading.first,
+                      tp: load > 0 ? (bytes * 8000) / load : 0 };
+        rec.xtp = rec.xfer > 0 ? (bytes * 8000) / rec.xfer : 0;
+
+        S.frags.push(rec);
+        if (S.frags.length > 100) S.frags.shift();
+        if (S.firstSeg == null) S.firstSeg = performance.now() - S.t0;
+
+        if (f.type === "main") {
+          const l = hls.levels[f.level];
+          const pt = { sn: f.sn, t: f.start, dur: f.duration, tp: rec.tp, est: hls.bandwidthEstimate, br: (l && l.bitrate) || (rec.dur ? (bytes * 8) / rec.dur : 0) };
+          const k = S.bw.findIndex(q => q.sn === f.sn);
+          if (k >= 0) S.bw[k] = pt; else S.bw.push(pt);
+          S.bw.sort((m, n) => m.t - n.t);
+          if (S.bw.length > 1000) S.bw.shift();
+        }
+
+        log("net", `Loaded ${f.type} sn ${f.sn} L${f.level} ${kb(bytes)} in ${ms(load)} (TTFB ${ms(rec.ttfb)}, transfer ${ms(rec.xfer)}, ${bps(rec.tp)} total, ${bps(rec.xtp)} transfer-only, load/dur ${f2(load / (f.duration * 1000))})`);
+        renderFrags();
+      });
+      hls.on(E.FRAG_CHANGED, (_, d) => log("media", `Playing sn ${d.frag.sn} L${d.frag.level}`));
+      hls.on(E.ERROR, (_, d) => {
+        if (d.fatal) S.errors++; else S.warnings++;
+        const code = d.response ? ` HTTP ${d.response.code}` : "";
+        const ctx = d.frag ? ` sn ${d.frag.sn}` : d.url ? " " + d.url : "";
+        log(d.fatal ? "err" : "warn", `${d.type} / ${d.details}${code}${ctx}${d.event ? " in " + d.event : ""}${d.error && d.error.message ? ": " + d.error.message : ""}${d.fatal ? " (FATAL)" : ""}`);
+        if (d.error && d.error.stack) console.error(d.error);
+
+        if (d.fatal) {
+          log("err", "Unrecoverable fatal hls.js error. Destroying engine...");
+          hls.destroy();
+          hls = null;
+
+          if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            log("warn", "Falling back to Native HLS engine...");
+            startNative(src);
+          } else {
+            setStatus("Playback error: " + d.details, true);
+          }
+        }
+      });
+
+      hls.loadSource(src);
+      hls.attachMedia(video);
+    }
+
+    function load() {
+      let src = $("src").value.trim();
+      const mode = $("engine").value;
+
+      try {
+        const u = new URL(src, location.href), inner = u.searchParams.get("src");
+        if (inner && !/\.m3u8$/i.test(u.pathname)) { src = inner; $("src").value = inner; }
+      } catch (e) {}
+
+      if (hls) { hls.destroy(); hls = null; }
+      video.removeAttribute("src");
+      video.load();
+      resetState();
+
+      logEl.textContent = "";
+      renderLevels(); renderFrags();
+
+      setStatus("Loading...");
+      const chosen = $("fileSelect").selectedOptions[0];
+      if (chosen && chosen.value !== "custom" && chosen.value === src) {
+        document.querySelector(".info > span:first-child").textContent = chosen.textContent + " · HLS playback";
+      } else {
+        document.querySelector(".info > span:first-child").textContent = "Custom HLS stream";
+      }
+
+      const mseOk = !!(window.Hls && Hls.isSupported());
+      const nativeOk = !!video.canPlayType("application/vnd.apple.mpegurl");
+
+      // Prefer hls.js whenever MSE is supported so telemetry metrics can be gathered
+      const useHls = mode === "hlsjs" || (mode === "auto" && mseOk);
+
+      if (useHls) {
+        if (!mseOk) {
+          if (nativeOk) {
+            log("warn", "MSE unavailable; falling back to native HLS.");
+            startNative(src);
+          } else {
+            setStatus("hls.js / MSE not supported", true);
+          }
+          return;
+        }
+        startHls(src);
+      } else if (nativeOk) {
+        startNative(src);
+      } else {
+        setStatus("HLS playback not supported", true);
+      }
+    }
+
+    $("fileSelect").addEventListener("change", () => {
+      if ($("fileSelect").value === "custom") {
+        $("src").focus();
+        return;
+      }
+      $("src").value = $("fileSelect").value;
+      load();
+    });
+    $("src").addEventListener("input", syncFileSelect);
+    $("form").addEventListener("submit", e => { e.preventDefault(); syncFileSelect(); load(); });
+
+    load();
+  </script>
+</body>
+</html>

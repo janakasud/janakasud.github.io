@@ -1,0 +1,277 @@
+---
+// src/pages/index.astro
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const entries = (await getCollection("entries", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Derive the filter list from published entries; ignore empty tag values.
+const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((tag) => tag.trim()).filter(Boolean))]
+  .sort((a, b) => a.localeCompare(b, "en-AU"));
+---
+
+<BaseLayout
+  title="Home"
+  showHeader={true}
+  description="Janaka Sudasingha's notebook of engineering projects, technical experiments, and ideas."
+>
+  <main class="container container-home notebook">
+    <h1 class="visually-hidden">Notebook entries</h1>
+
+    {entries.length > 0 ? (
+      <div class="notebook-layout" data-notebook>
+        {tags.length > 0 && (
+          <aside class="tag-sidebar" aria-label="Filter notebook entries">
+            <h2 class="sidebar-title">Tags</h2>
+            <div class="tag-tiles" role="group" aria-label="Filter by tag">
+              <button class="tag-tile" type="button" data-filter="" aria-pressed="true">All</button>
+              {tags.map((tag) => (
+                <button class="tag-tile" type="button" data-filter={tag} aria-pressed="false">{tag}</button>
+              ))}
+            </div>
+          </aside>
+        )}
+
+        <div class="feed">
+          <ol class="entry-list">
+            {entries.map((entry) => (
+              <li class="entry-item" data-entry-tags={JSON.stringify(entry.data.tags ?? [])}>
+                <article class="entry">
+                  <time class="entry-date" datetime={entry.data.pubDate.toISOString()}>
+                    {entry.data.pubDate.toLocaleDateString("en-AU", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    })}
+                  </time>
+                  <div class="entry-body">
+                    <h2 class="entry-title">
+                      <a href={`/entries/${entry.id}/`}>{entry.data.title}</a>
+                    </h2>
+                    <p class="entry-description">{entry.data.description}</p>
+                    {(entry.data.tags ?? []).length > 0 && (
+                      <ul class="entry-tags" aria-label="Topics">
+                        {(entry.data.tags ?? []).map((tag) => <li>{tag}</li>)}
+                      </ul>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          <p class="filter-empty" data-filter-empty hidden>No entries match this tag.</p>
+          <p class="filter-count" data-filter-count role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    ) : (
+      <p class="empty">No notebook entries published yet.</p>
+    )}
+  </main>
+</BaseLayout>
+
+<script>
+  const notebook = document.querySelector<HTMLElement>("[data-notebook]");
+
+  if (notebook) {
+    const buttons = [...notebook.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+    const items = [...notebook.querySelectorAll<HTMLElement>("[data-entry-tags]")];
+    const empty = notebook.querySelector<HTMLElement>("[data-filter-empty]");
+    const count = notebook.querySelector<HTMLElement>("[data-filter-count]");
+    const tagNames = buttons.map((button) => button.dataset.filter ?? "");
+
+    const applyFilter = (requestedTag: string) => {
+      const tag = tagNames.includes(requestedTag) ? requestedTag : "";
+      let visible = 0;
+
+      for (const item of items) {
+        const itemTags: string[] = JSON.parse(item.dataset.entryTags ?? "[]");
+        const matches = !tag || itemTags.includes(tag);
+        item.hidden = !matches;
+        if (matches) visible++;
+      }
+
+      for (const button of buttons) {
+        button.setAttribute("aria-pressed", String((button.dataset.filter ?? "") === tag));
+      }
+
+      if (empty) empty.hidden = visible !== 0;
+      if (count) count.textContent = `${visible} ${visible === 1 ? "entry" : "entries"}${tag ? ` tagged “${tag}”` : ""}`;
+    };
+
+    const readTag = () => new URL(window.location.href).searchParams.get("tag") ?? "";
+    applyFilter(readTag());
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const tag = button.dataset.filter ?? "";
+        const url = new URL(window.location.href);
+        if (tag) url.searchParams.set("tag", tag);
+        else url.searchParams.delete("tag");
+        window.history.pushState(null, "", url);
+        applyFilter(tag);
+      });
+    }
+
+    window.addEventListener("popstate", () => applyFilter(readTag()));
+  }
+</script>
+
+<style>
+  .notebook {
+    padding-top: 28px;
+    padding-bottom: 56px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Two outer columns + the date/content columns inside each entry. */
+  .notebook-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-areas: "feed sidebar";
+    gap: 44px;
+    align-items: start;
+  }
+
+  .feed { grid-area: feed; min-width: 0; }
+  .tag-sidebar { grid-area: sidebar; min-width: 0; }
+
+  .sidebar-title {
+    margin: 0 0 14px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .tag-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag-tile {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .tag-tile:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tag-tile[aria-pressed="true"] {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg-elevated);
+  }
+
+  .tag-tile:focus-visible,
+  .entry-title a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .entry-list,
+  .entry-tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .entry-item {
+    margin: 0;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border);
+    list-style: none;
+  }
+
+  .entry-item:first-child { padding-top: 0; }
+  .entry-item[hidden] { display: none; }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .entry-date {
+    padding-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .entry-body { min-width: 0; }
+
+  .entry-title {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .entry-title a { color: var(--text); text-decoration: none; }
+  .entry-title a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 0.2em; }
+
+  .entry-description {
+    max-width: 48rem;
+    margin: 0 0 10px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .entry-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 16px;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .filter-count {
+    margin: 16px 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  .filter-count:empty { display: none; }
+  .filter-empty { margin: 22px 0 0; color: var(--text-secondary); }
+  .filter-empty[hidden] { display: none; }
+  .empty { margin: 0; }
+
+  @media (max-width: 900px) {
+    .notebook-layout {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "sidebar" "feed";
+      gap: 24px;
+    }
+    .sidebar-title { margin-bottom: 10px; }
+  }
+
+  @media (max-width: 640px) {
+    .notebook { padding-top: 20px; }
+    .entry { grid-template-columns: 1fr; row-gap: 6px; }
+    .entry-date { padding-top: 0; }
+    .entry-item { padding: 20px 0; }
+    .entry-title { font-size: 1.125rem; }
+  }
+</style>

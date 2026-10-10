@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+<rect width="640" height="400" fill="#f0ede7"/>
+<g font-family="monospace" font-size="16" fill="#3a4a5a"><text x="34" y="34">ENERGY = POWER × TIME</text><text x="34" y="76">Constant power · illustrative example</text></g>
+<rect x="100" y="140" width="440" height="160" fill="#ead2c2"/>
+<path d="M100 140H540" stroke="#b6461c" stroke-width="3"/>
+<path d="M100 100V300H590" stroke="#1c2a38" stroke-width="2" fill="none"/>
+<g font-family="monospace" font-size="15" fill="#3a4a5a"><text x="24" y="146">100 W</text><text x="64" y="305">0</text><text x="90" y="328">0 h</text><text x="514" y="328">2 h</text><text x="203" y="221">100 W × 2 h = 200 Wh</text><text x="238" y="248">= 0.2 kWh</text><text x="34" y="380">THE SHADED AREA REPRESENTS ENERGY USED.</text></g>
+</svg>
