@@ -38,24 +38,26 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((
             {entries.map((entry) => (
               <li class="entry-item" data-entry-tags={JSON.stringify(entry.data.tags ?? [])}>
                 <article class="entry">
-                  <time class="entry-date" datetime={entry.data.pubDate.toISOString()}>
-                    {entry.data.pubDate.toLocaleDateString("en-AU", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      timeZone: "UTC",
-                    })}
-                  </time>
                   <div class="entry-body">
                     <h2 class="entry-title">
                       <a href={`/entries/${entry.id}/`}>{entry.data.title}</a>
                     </h2>
                     <p class="entry-description">{entry.data.description}</p>
-                    {(entry.data.tags ?? []).length > 0 && (
-                      <ul class="entry-tags" aria-label="Topics">
-                        {(entry.data.tags ?? []).map((tag) => <li>{tag}</li>)}
-                      </ul>
-                    )}
+                    <div class="entry-meta">
+                      {(entry.data.tags ?? []).length > 0 && (
+                        <ul class="entry-tags" aria-label="Topics">
+                          {(entry.data.tags ?? []).map((tag) => <li>{tag}</li>)}
+                        </ul>
+                      )}
+                      <time class:list={["entry-date", { "has-tags": (entry.data.tags ?? []).length > 0 }]} datetime={entry.data.pubDate.toISOString()}>
+                        {entry.data.pubDate.toLocaleDateString("en-AU", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          timeZone: "UTC",
+                        })}
+                      </time>
+                    </div>
                   </div>
                 </article>
               </li>
@@ -136,7 +138,7 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((
     border: 0;
   }
 
-  /* Two outer columns + the date/content columns inside each entry. */
+  /* Shared content/sidebar structure used across the site. */
   .notebook-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 220px;
@@ -207,19 +209,19 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((
   .entry-item:first-child { padding-top: 0; }
   .entry-item[hidden] { display: none; }
 
-  .entry {
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr);
-    column-gap: 24px;
-    align-items: start;
+  .entry { min-width: 0; }
+
+  .entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 5px 0;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
   }
 
-  .entry-date {
-    padding-top: 4px;
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    white-space: nowrap;
-  }
+  .entry-date { white-space: nowrap; }
+  .entry-date.has-tags::before { content: "·"; margin: 0 12px; }
 
   .entry-body { min-width: 0; }
 
@@ -243,8 +245,8 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((
     display: flex;
     flex-wrap: wrap;
     gap: 5px 16px;
-    color: var(--text-muted);
-    font-size: 0.8125rem;
+    color: inherit;
+    font-size: inherit;
   }
 
   .filter-count {
@@ -269,8 +271,6 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags ?? []).map((
 
   @media (max-width: 640px) {
     .notebook { padding-top: 20px; }
-    .entry { grid-template-columns: 1fr; row-gap: 6px; }
-    .entry-date { padding-top: 0; }
     .entry-item { padding: 20px 0; }
     .entry-title { font-size: 1.125rem; }
   }
