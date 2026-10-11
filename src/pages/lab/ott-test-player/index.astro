@@ -47,8 +47,10 @@
     .status { color: var(--ok); }
     .status.error { color: var(--bad); }
 
-    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 16px; align-items: stretch; }
     .col { display: grid; gap: 16px; }
+    .col.main { grid-template-rows: auto auto 1fr; }   /* video, timeline, chart (takes the rest) */
+    .col.main > .card:last-child { display: flex; flex-direction: column; }
     .tables { display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; margin: 16px 0; }
 
     video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; }
@@ -60,7 +62,9 @@
 
     canvas { display: block; width: 100%; }
     #tl { height: 44px; }
-    #chart { height: 170px; }
+    /* The canvas is absolutely positioned so it adds no size to the layout; the box sets the height. */
+    .chartbox { position: relative; flex: 1; min-height: 170px; }
+    .chartbox canvas { position: absolute; inset: 0; height: 100%; }
     .legend { display: flex; gap: 14px; font-size: 0.72rem; color: var(--dim); margin-bottom: 8px; flex-wrap: wrap; }
     .legend i { display: inline-block; width: 10px; height: 3px; margin-right: 5px; vertical-align: middle; }
 
@@ -129,7 +133,7 @@
 
     <div class="layout">
       <!-- Video and charts -->
-      <div class="col">
+      <div class="col main">
         <video id="video" controls playsinline preload="metadata"></video>
         <section class="card">
           <h2>Buffer and playhead</h2>
@@ -142,7 +146,7 @@
             <span><i style="background:var(--warn)"></i>Bandwidth estimate (clipped)</span>
             <span><i style="background:var(--ok)"></i>Level bitrate</span>
           </div>
-          <canvas id="chart"></canvas>
+          <div class="chartbox"><canvas id="chart"></canvas></div>
         </section>
       </div>
 
@@ -375,7 +379,8 @@
     // Canvas drawing: timeline and throughput chart follow the current playback state.
     function cv(id) {
       const c = $(id), r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1;
-      if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
+      const W = Math.round(r.width * d), H = Math.round(r.height * d);
+      if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
       const x = c.getContext("2d");
       x.setTransform(d, 0, 0, d, 0, 0);
       x.clearRect(0, 0, r.width, r.height);
