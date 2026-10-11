@@ -103,7 +103,7 @@
       </div>
       <form id="form" class="src">
         <select id="fileSelect" aria-label="Select HLS video">
-          <option value="/lab/ott-test-player/samples/test-pattern/master.m3u8">Test pattern (240p / 360p / 480p)</option>
+          <option value="https://pub-f0633b4279834e83917ffcf5173d2275.r2.dev/test-pattern/master.m3u8">Test pattern (240p / 360p / 480p)</option>
           <option value="custom">Custom URL</option>
         </select>
         <input id="src" spellcheck="false" aria-label="Manifest URL" />
@@ -196,7 +196,7 @@
     const video = $("video"), statusEl = $("status"), logEl = $("log");
 
     // Default manifest and optional query-string overrides (?src, ?engine, ?buffer).
-    const DEFAULT_SRC = "/lab/ott-test-player/samples/test-pattern/master.m3u8";
+    const DEFAULT_SRC = "https://pub-f0633b4279834e83917ffcf5173d2275.r2.dev/test-pattern/master.m3u8";
     const qs = new URLSearchParams(location.search);
     $("src").value = qs.get("src") || DEFAULT_SRC;
 
