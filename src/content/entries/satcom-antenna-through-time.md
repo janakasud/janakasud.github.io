@@ -1,7 +1,7 @@
 ---
 title: "Satcom Antennas Through Time: From Simple Whips to Smart Arrays"
 description: "A look at how satellite communication antennas evolved — from early omnidirectional whips and horns to parabolic dishes and modern electronically steerable phased arrays."
-pubDate: 2026-10-11
+pubDate: 2026-02-10
 tags:
   - satcom
   - antennas

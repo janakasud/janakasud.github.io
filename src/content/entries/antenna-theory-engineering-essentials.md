@@ -1,5 +1,5 @@
 ---
-title: "Antenna Theory"
+title: "Antenna Theory & Engineering Essentials"
 description: "An overview of antenna radiation, gain, directivity, and key concepts used to describe antenna performance."
 pubDate: 2025-12-03
 tags:

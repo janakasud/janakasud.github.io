@@ -1,7 +1,7 @@
 ---
 title: "The Origins of Orbit: From Newton to Clarke to Sputnik"
 description: "The ideas, breakthroughs, and visionaries that carried the concept of orbit from Newtonian physics through Arthur C. Clarke’s communications vision to Sputnik 1."
-pubDate: 2026-10-02
+pubDate: 2026-01-05
 tags:
   - Space
   - Satellites
